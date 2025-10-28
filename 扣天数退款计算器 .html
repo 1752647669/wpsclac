@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>退款&日期综合计算器</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 30px 0;
+            gap: 30px; /* 左右两栏间距 */
+        }
+        .calculator {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+        }
+        .date-calculators {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* 两个日期计算器上下间距 */
+        }
+        .date-calc-item {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #4a6baf;
+            margin-bottom: 25px;
+            font-size: 22px;
+        }
+        h2 {
+            color: #4a6baf;
+            margin-bottom: 20px;
+            font-size: 18px;
+            border-bottom: 2px solid #f0f4f8;
+            padding-bottom: 10px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border 0.3s;
+        }
+        input:focus {
+            border-color: #4a6baf;
+            outline: none;
+        }
+        button {
+            background: #4a6baf;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin-top: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #3a5a9f;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #4a6baf;
+            min-height: 24px;
+        }
+        .error {
+            color: #e74c3c !important;
+        }
+        /* 适配手机端 */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+                align-items: center;
+                padding: 20px;
+            }
+            .calculator, .date-calc-item {
+                width: 100%;
+                max-width: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 左侧：原退款计算器 -->
+    <div class="calculator">
+        <h1>扣天数退款计算器</h1>
+        <input type="number" id="totalPrice" placeholder="输入订单总价格" step="0.01">
+        <input type="number" id="totalDays" placeholder="输入订单总天数" min="1">
+        <input type="number" id="usedDays" placeholder="输入订单已使用天数" min="0">
+        <button onclick="calculateRefund()">计算需要扣除金额</button>
+        <div id="deductionResult" class="result"></div>
+        <div id="refundResult" class="result"></div>
+    </div>
+
+    <!-- 右侧：两个日期计算器（上下放置） -->
+    <div class="date-calculators">
+        <!-- 日期增减计算器 -->
+        <div class="date-calc-item">
+            <h2>日期增减计算器</h2>
+            <input type="date" id="baseDate" placeholder="选择基准日期">
+            <input type="number" id="dayOffset" placeholder="输入天数（正数往后/负数往前）" step="1">
+            <button onclick="calculateDateOffset()">计算目标日期</button>
+            <div id="offsetResult" class="result"></div>
+        </div>
+
+        <!-- 日期间隔计算器 -->
+        <div class="date-calc-item">
+            <h2>日期间隔计算器</h2>
+            <input type="date" id="startDate" placeholder="选择开始日期">
+            <input type="date" id="endDate" placeholder="选择结束日期">
+            <button onclick="calculateDateDiff()">计算间隔天数</button>
+            <div id="diffResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载时设置所有日期输入框默认值为当天
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('baseDate').value = today;
+            document.getElementById('startDate').value = today;
+            document.getElementById('endDate').value = today;
+        };
+
+        // 原退款计算器逻辑
+        function calculateRefund() {
+            const totalPrice = parseFloat(document.getElementById('totalPrice').value) || 0;
+            const totalDays = parseFloat(document.getElementById('totalDays').value) || 0;
+            const usedDays = parseFloat(document.getElementById('usedDays').value) || 0;
+            const deductionEl = document.getElementById('deductionResult');
+            const refundEl = document.getElementById('refundResult');
+
+            if (isNaN(totalPrice) || isNaN(totalDays) || isNaN(usedDays) || 
+                totalPrice < 0 || totalDays <= 0 || usedDays < 0 || usedDays > totalDays) {
+                deductionEl.textContent = '请输入有效数值：价格≥0，总天数≥1，已用天数≤总天数！';
+                deductionEl.classList.add('error');
+                refundEl.textContent = '';
+                return;
+            }
+
+            const dailyPrice = Number((totalPrice / totalDays).toFixed(2));
+            const deductionAmount = Number((dailyPrice * usedDays).toFixed(2));
+            const refundAmount = Number((totalPrice - deductionAmount).toFixed(2));
+
+            deductionEl.classList.remove('error');
+            deductionEl.textContent = `需扣除金额：¥${deductionAmount.toFixed(2)}`;
+            refundEl.textContent = `可退金额：¥${refundAmount.toFixed(2)}`;
+        }
+
+        // 日期增减计算器逻辑（往后/往前N天）
+        function calculateDateOffset() {
+            const baseDate = new Date(document.getElementById('baseDate').value);
+            const dayOffset = parseInt(document.getElementById('dayOffset').value) || 0;
+            const resultEl = document.getElementById('offsetResult');
+
+            if (isNaN(baseDate.getTime())) {
+                resultEl.textContent = '请选择有效的基准日期！';
+                resultEl.classList.add('error');
+                return;
+            }
+
+            // 计算目标日期（毫秒数加减）
+            const targetDate = new Date(baseDate);
+            targetDate.setDate(baseDate.getDate() + dayOffset);
+
+            // 格式化日期为 YYYY-MM-DD
+            const formattedDate = targetDate.toISOString().split('T')[0];
+            const direction = dayOffset > 0 ? '往后' : dayOffset < 0 ? '往前' : '（无偏移）';
+
+            resultEl.classList.remove('error');
+            resultEl.textContent = `${direction}${Math.abs(dayOffset)}天：${formattedDate}`;
+        }
+
+        // 日期间隔计算器逻辑（计算后自动导入到左侧已使用天数）
+        function calculateDateDiff() {
+            const startDate = new Date(document.getElementById('startDate').value);
+            const endDate = new Date(document.getElementById('endDate').value);
+            const resultEl = document.getElementById('diffResult');
+            const usedDaysInput = document.getElementById('usedDays'); // 获取左侧已使用天数输入框
+
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                resultEl.textContent = '请选择有效的开始和结束日期！';
+                resultEl.classList.add('error');
+                return;
+            }
+
+            if (startDate > endDate) {
+                resultEl.textContent = '开始日期不能晚于结束日期！';
+                resultEl.classList.add('error');
+                return;
+            }
+
+            // 计算天数差（毫秒转天）
+            const timeDiff = endDate - startDate;
+            const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
+            // 自动将间隔天数填入左侧"订单已使用天数"输入框
+            usedDaysInput.value = dayDiff;
+
+            resultEl.classList.remove('error');
+            resultEl.textContent = `两个日期间隔：${dayDiff} 天（已自动填入已使用天数）`;
+        }
+    </script>
+</body>
+</html>
