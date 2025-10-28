@@ -158,7 +158,7 @@
                 return;
             }
 
-            const dailyPrice = Number((totalPrice / totalDays).toFixed(2));
+            const dailyPrice = Number((totalPrice / totalDays));
             const deductionAmount = Number((dailyPrice * usedDays).toFixed(2));
             const refundAmount = Number((totalPrice - deductionAmount).toFixed(2));
 
@@ -222,4 +222,5 @@
         }
     </script>
 </body>
+
 </html>
