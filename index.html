@@ -3,133 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>退款&日期综合计算器</title>
+    <title>订单信息提取与计算器综合工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            margin: 0;
-            padding: 30px 0;
-            gap: 30px; /* 左右两栏间距 */
+        html, body {
+            height: 100%;
+            overflow: hidden;
         }
-        .calculator {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            width: 350px;
-            text-align: center;
+        .container {
+            max-height: 100vh;
+            overflow-y: auto;
         }
-        .date-calculators {
-            display: flex;
-            flex-direction: column;
-            gap: 20px; /* 两个日期计算器上下间距 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
         }
-        .date-calc-item {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        h1 {
-            color: #4a6baf;
-            margin-bottom: 25px;
-            font-size: 22px;
+        .tool-card {
+            max-height: calc(50vh - 30px);
+            overflow-y: auto;
         }
-        h2 {
-            color: #4a6baf;
-            margin-bottom: 20px;
-            font-size: 18px;
-            border-bottom: 2px solid #f0f4f8;
-            padding-bottom: 10px;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            box-sizing: border-box;
-            transition: border 0.3s;
-        }
-        input:focus {
-            border-color: #4a6baf;
-            outline: none;
-        }
-        button {
-            background: #4a6baf;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            margin-top: 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background: #3a5a9f;
-        }
-        .result {
-            margin-top: 20px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #4a6baf;
-            min-height: 24px;
-        }
-        .error {
-            color: #e74c3c !important;
-        }
-        /* 适配手机端 */
-        @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-                align-items: center;
-                padding: 20px;
-            }
-            .calculator, .date-calc-item {
-                width: 100%;
-                max-width: 350px;
-            }
+        textarea {
+            resize: none;
         }
     </style>
 </head>
-<body>
-    <!-- 左侧：原退款计算器 -->
-    <div class="calculator">
-        <h1>扣天数退款计算器</h1>
-        <input type="number" id="totalPrice" placeholder="输入订单总价格" step="0.01">
-        <input type="number" id="totalDays" placeholder="输入订单总天数" min="1">
-        <input type="number" id="usedDays" placeholder="输入订单已使用天数" min="0">
-        <button onclick="calculateRefund()">计算需要扣除金额</button>
-        <div id="deductionResult" class="result"></div>
-        <div id="refundResult" class="result"></div>
-    </div>
-
-    <!-- 右侧：两个日期计算器（上下放置） -->
-    <div class="date-calculators">
-        <!-- 日期增减计算器 -->
-        <div class="date-calc-item">
-            <h2>日期增减计算器</h2>
-            <input type="date" id="baseDate" placeholder="选择基准日期">
-            <input type="number" id="dayOffset" placeholder="输入天数（正数往后/负数往前）" step="1">
-            <button onclick="calculateDateOffset()">计算目标日期</button>
-            <div id="offsetResult" class="result"></div>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-2">
+    <div class="w-full max-w-6xl bg-white rounded-2xl shadow-xl p-4 h-[98vh] flex flex-col">
+        <div class="text-center mb-3 flex-shrink-0">
+            <h1 class="text-xl md:text-2xl font-bold text-indigo-700 mb-1">
+                <i class="fas fa-file-invoice mr-2"></i>订单信息提取与计算器综合工具
+            </h1>
+            <p class="text-gray-600 text-sm">一站式解决订单信息提取与退款计算需求</p>
         </div>
 
-        <!-- 日期间隔计算器 -->
-        <div class="date-calc-item">
-            <h2>日期间隔计算器</h2>
-            <input type="date" id="startDate" placeholder="选择开始日期">
-            <input type="date" id="endDate" placeholder="选择结束日期">
-            <button onclick="calculateDateDiff()">计算间隔天数</button>
-            <div id="diffResult" class="result"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-grow overflow-hidden">
+            <!-- 订单信息提取工具 -->
+            <div class="tool-card bg-white rounded-2xl shadow-xl p-4 fade-in flex flex-col">
+                <h2 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-file-invoice text-indigo-500 mr-2"></i>订单信息提取工具
+                </h2>
+                <div class="input-group mb-3 flex-grow flex flex-col">
+                    <label class="block text-gray-700 font-medium mb-1 text-sm">
+                        <i class="fas fa-keyboard mr-1"></i>输入订单信息
+                    </label>
+                    <textarea 
+                        id="inputText" 
+                        class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition-all text-sm"
+                        placeholder="请粘贴包含订单信息的文本&#10;&#10;例如：&#10;订单号: *******************&#10;状态: ***********&#10;到账手机号: **********;到账WPS ID: **********"
+                    ></textarea>
+                </div>
+                
+                <button 
+                    onclick="processText()" 
+                    class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium py-2 px-3 rounded-lg transition-all transform hover:-translate-y-0.5 shadow-md hover:shadow-lg flex items-center justify-center text-sm mb-3"
+                >
+                    <i class="fas fa-bolt mr-1"></i>生成标准回复
+                </button>
+                
+                <div class="input-group flex-grow flex flex-col">
+                    <label class="block text-gray-700 font-medium mb-1 text-sm">
+                        <i class="fas fa-comment-dots mr-1"></i>生成的回复
+                    </label>
+                    <div class="relative flex-grow flex flex-col">
+                        <textarea 
+                            id="outputText" 
+                            class="flex-grow p-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition-all text-sm"
+                            readonly
+                        >您好，辛苦久等啦，客服为您查询到订单号：[订单号]，会员充值到账的手机号为：[手机号]，到账WPS ID为：[WPS ID]，辛苦您可以登陆到账的WPS账号来查询会员有效期哦~</textarea>
+                        <button 
+                            onclick="copyToClipboard()" 
+                            class="absolute top-2 right-2 bg-indigo-500 hover:bg-indigo-600 text-white p-1 rounded-lg transition-colors text-xs"
+                            title="复制到剪贴板"
+                        >
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 退款计算器 -->
+            <div class="tool-card bg-white rounded-2xl shadow-xl p-4 fade-in flex flex-col">
+                <h2 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-calculator text-green-500 mr-2"></i>扣天数退款计算器
+                </h2>
+                <div class="input-group mb-2">
+                    <label class="block text-gray-700 font-medium mb-1 text-sm">订单总价格</label>
+                    <input type="number" id="totalPrice" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition-all text-sm" placeholder="输入订单总价格" step="0.01">
+                </div>
+                
+                <div class="input-group mb-2">
+                    <label class="block text-gray-700 font-medium mb-1 text-sm">订单总天数</label>
+                    <input type="number" id="totalDays" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition-all text-sm"
+                    placeholder="输入订单总天数" min="1">
+                </div>
+                
+                <div class="input-group mb-3">
+                    <label class="block text-gray-700 font-medium mb-1 text-sm">订单已使用天数</label>
+                    <input type="number" id="usedDays" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition-all text-sm"
+                    placeholder="输入订单已使用天数" min="0">
+                </div>
+                
+                <button 
+                    onclick="calculateRefund()" 
+                    class="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-medium py-2 px-3 rounded-lg transition-all transform hover:-translate-y-0.5 shadow-md hover:shadow-lg flex items-center justify-center text-sm mb-3"
+                >
+                    <i class="fas fa-calculator mr-1"></i>计算需要扣除金额
+                </button>
+                
+                <div id="deductionResult" class="result p-2 bg-gray-50 rounded-lg text-sm mb-1"></div>
+                <div id="refundResult" class="result p-2 bg-gray-50 rounded-lg text-sm"></div>
+            </div>
+        </div>
+        
+        <!-- 日期计算器 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 flex-shrink-0">
+            <!-- 日期增减计算器 -->
+            <div class="bg-white rounded-2xl shadow-xl p-4 fade-in">
+                <h2 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-calendar-alt text-purple-500 mr-2"></i>日期增减计算器
+                </h2>
+                <div class="input-group mb-2">
+                    <label class="block text-gray-700 font-medium mb-1 text-sm">基准日期</label>
+                <input type="date" id="baseDate" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition-all text-sm"
+                    placeholder="选择基准日期">
+                </div>
+                
+                <div class="input-group mb-3">
+                    <label class="block text-gray-700 font-medium mb-1 text-sm">偏移天数</label>
+                <input type="number" id="dayOffset" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition-all text-sm"
+                    placeholder="输入天数（正数往后/负数往前）" step="1">
+                </div>
+                
+                <button 
+                    onclick="calculateDateOffset()" 
+                    class="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-medium py-2 px-3 rounded-lg transition-all transform hover:-translate-y-0.5 shadow-md hover:shadow-lg flex items-center justify-center text-sm"
+                >
+                    <i class="fas fa-calendar-plus mr-1"></i>计算目标日期
+                </button>
+                
+                <div id="offsetResult" class="result p-2 bg-gray-50 rounded-lg text-sm mt-2"></div>
+            </div>
+            
+            <!-- 日期间隔计算器 -->
+            <div class="bg-white rounded-2xl shadow-xl p-4 fade-in">
+                <h2 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-calendar-minus text-blue-500 mr-2"></i>日期间隔计算器
+                </h2>
+                <div class="input-group mb-2">
+                    <label class="block text-gray-700 font-medium mb-1 text-sm">开始日期</label>
+                    <input type="date" id="startDate" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition-all text-sm"
+                    placeholder="选择开始日期">
+                </div>
+                
+                <div class="input-group mb-3">
+                    <label class="block text-gray-700 font-medium mb-1 text-sm">结束日期</label>
+                    <input type="date" id="endDate" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition-all text-sm"
+                    placeholder="选择结束日期">
+                </div>
+                
+                <button 
+                    onclick="calculateDateDiff()" 
+                    class="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-medium py-2 px-3 rounded-lg transition-all transform hover:-translate-y-0.5 shadow-md hover:shadow-lg flex items-center justify-center text-sm"
+                >
+                    <i class="fas fa-calendar-check mr-1"></i>计算间隔天数
+                </button>
+                
+                <div id="diffResult" class="result p-2 bg-gray-50 rounded-lg text-sm mt-2"></div>
+            </div>
+        </div>
+        
+        <!-- Toast Notification -->
+        <div id="toast" class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg transform translate-y-20 transition-transform duration-300 hidden text-sm">
+            <i class="fas fa-check-circle mr-2"></i>已复制到剪贴板！
         </div>
     </div>
 
@@ -141,15 +190,58 @@
             document.getElementById('startDate').value = today;
             document.getElementById('endDate').value = today;
         };
+        
+        // 订单信息提取工具逻辑
+        function processText() {
+            const inputText = document.getElementById('inputText').value.trim();
+            if (!inputText) {
+                showToast('请输入订单信息', 'red');
+                return;
+            }
 
-        // 原退款计算器逻辑
+            // 改进后的正则表达式 - 匹配包含连字符的完整订单号
+            const orderNoMatch = inputText.match(/订单号[:：]\s*([\w-]+)/);
+            const phoneNoMatch = inputText.match(/到账手机号[:：]\s*([\d*]+)/);
+            const wpsIdMatch = inputText.match(/到账WPS\s*ID[:：]\s*(\d+)/);
+
+            // 获取提取结果或默认值
+            const orderNo = orderNoMatch ? orderNoMatch[1] : '[未找到订单号]';
+            const phoneNo = phoneNoMatch ? phoneNoMatch[1] : '[未找到手机号]';
+            const wpsId = wpsIdMatch ? wpsIdMatch[1] : '[未找到WPS ID]';
+
+            // 生成标准回复
+            const standardReply = `您好，辛苦久等啦，客服为您查询到订单号：${orderNo}，会员充值到账的手机号为：${phoneNo}，到账WPS ID为：${wpsId}，辛苦您可以登陆到账的WPS账号来查询会员有效期哦~`;
+
+            // 填入生成的内容
+            document.getElementById('outputText').value = standardReply;
+        }
+
+        function copyToClipboard() {
+            const outputText = document.getElementById('outputText');
+            outputText.select();
+            outputText.setSelectionRange(0, 99999); // For mobile devices
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast('已复制到剪贴板！', 'green');
+                } else {
+                    showToast('复制失败，请手动复制', 'red');
+                }
+            } catch (err) {
+                showToast('复制失败，请手动复制', 'red');
+                console.error('复制失败:', err);
+            }
+        }
+        
+        // 退款计算器逻辑
         function calculateRefund() {
             const totalPrice = parseFloat(document.getElementById('totalPrice').value) || 0;
             const totalDays = parseFloat(document.getElementById('totalDays').value) || 0;
             const usedDays = parseFloat(document.getElementById('usedDays').value) || 0;
             const deductionEl = document.getElementById('deductionResult');
             const refundEl = document.getElementById('refundResult');
-
+            
             if (isNaN(totalPrice) || isNaN(totalDays) || isNaN(usedDays) || 
                 totalPrice < 0 || totalDays <= 0 || usedDays < 0 || usedDays > totalDays) {
                 deductionEl.textContent = '请输入有效数值：价格≥0，总天数≥1，已用天数≤总天数！';
@@ -157,70 +249,106 @@
                 refundEl.textContent = '';
                 return;
             }
-
+            
             const dailyPrice = Number((totalPrice / totalDays));
             const deductionAmount = Number((dailyPrice * usedDays).toFixed(2));
-            const refundAmount = Number((totalPrice - deductionAmount).toFixed(2));
-
+            const refundAmount = Number((totalPrice - deductionAmount));
+            
             deductionEl.classList.remove('error');
             deductionEl.textContent = `需扣除金额：¥${deductionAmount.toFixed(2)}`;
             refundEl.textContent = `可退金额：¥${refundAmount.toFixed(2)}`;
         }
-
+        
         // 日期增减计算器逻辑（往后/往前N天）
         function calculateDateOffset() {
             const baseDate = new Date(document.getElementById('baseDate').value);
             const dayOffset = parseInt(document.getElementById('dayOffset').value) || 0;
             const resultEl = document.getElementById('offsetResult');
-
+            
             if (isNaN(baseDate.getTime())) {
                 resultEl.textContent = '请选择有效的基准日期！';
                 resultEl.classList.add('error');
                 return;
             }
-
+            
             // 计算目标日期（毫秒数加减）
             const targetDate = new Date(baseDate);
             targetDate.setDate(baseDate.getDate() + dayOffset);
-
+            
             // 格式化日期为 YYYY-MM-DD
             const formattedDate = targetDate.toISOString().split('T')[0];
             const direction = dayOffset > 0 ? '往后' : dayOffset < 0 ? '往前' : '（无偏移）';
-
+            
             resultEl.classList.remove('error');
             resultEl.textContent = `${direction}${Math.abs(dayOffset)}天：${formattedDate}`;
         }
-
+        
         // 日期间隔计算器逻辑（计算后自动导入到左侧已使用天数）
         function calculateDateDiff() {
             const startDate = new Date(document.getElementById('startDate').value);
             const endDate = new Date(document.getElementById('endDate').value);
             const resultEl = document.getElementById('diffResult');
             const usedDaysInput = document.getElementById('usedDays'); // 获取左侧已使用天数输入框
-
+            
             if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
                 resultEl.textContent = '请选择有效的开始和结束日期！';
                 resultEl.classList.add('error');
                 return;
             }
-
+            
             if (startDate > endDate) {
                 resultEl.textContent = '开始日期不能晚于结束日期！';
                 resultEl.classList.add('error');
                 return;
             }
-
+            
             // 计算天数差（毫秒转天）
             const timeDiff = endDate - startDate;
             const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-
+            
             // 自动将间隔天数填入左侧"订单已使用天数"输入框
             usedDaysInput.value = dayDiff;
-
+            
             resultEl.classList.remove('error');
             resultEl.textContent = `两个日期间隔：${dayDiff} 天（已自动填入已使用天数）`;
         }
+
+        function showToast(message, color) {
+            // 创建toast元素
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 4px;
+                right: 4px;
+                background: ${color === 'green' ? '#2ecc71' : '#e74c3c'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+                z-index: 1000;
+                transform: translateY(20px);
+                opacity: 0;
+                transition: all 0.3s ease;
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // 显示toast
+            setTimeout(() => {
+                toast.style.transform = 'translateY(0)';
+                toast.style.opacity = '1';
+            }, 10);
+
+            // 隐藏toast
+            setTimeout(() => {
+                toast.style.transform = 'translateY(20px)';
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 2000);
+        }
     </script>
 </body>
-
 </html>
