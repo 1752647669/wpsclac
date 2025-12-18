@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>金山客服实用工具站</title>
+    <title>订单信息提取与计算器综合工具</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -56,7 +56,9 @@
                         placeholder="请粘贴包含订单信息的文本&#10;&#10;例如：&#10;订单号: *******************&#10;状态: ***********&#10;到账手机号: **********;到账WPS ID: **********"
                     ></textarea>
                 </div>
-                
+                <div class="input-group mb-2">
+                    <input type="text" id="transferInId" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition-all text-sm" placeholder="输入转入id" step="0.01">
+                </div>
                 <button 
                     onclick="processText()" 
                     class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium py-2 px-3 rounded-lg transition-all transform hover:-translate-y-0.5 shadow-md hover:shadow-lg flex items-center justify-center text-sm mb-3"
@@ -194,6 +196,8 @@
         // 订单信息提取工具逻辑
         function processText() {
             const inputText = document.getElementById('inputText').value.trim();
+			const transferInIdVlaue = transferInId.value
+			const standardReply = `您好，辛苦久等啦，客服为您查询到订单号：${transferInIdVlaue}，会员充值到账的手机号为：${phoneNo}，到账WPS ID为：${wpsId}，辛苦您可以登陆到账的WPS账号来查询会员有效期哦~`
             if (!inputText) {
                 showToast('请输入订单信息', 'red');
                 return;
@@ -203,15 +207,18 @@
             const orderNoMatch = inputText.match(/订单号[:：]\s*([\w-]+)/);
             const phoneNoMatch = inputText.match(/到账手机号[:：]\s*([\d*]+)/);
             const wpsIdMatch = inputText.match(/到账WPS\s*ID[:：]\s*(\d+)/);
-
             // 获取提取结果或默认值
             const orderNo = orderNoMatch ? orderNoMatch[1] : '[未找到订单号]';
             const phoneNo = phoneNoMatch ? phoneNoMatch[1] : '[未找到手机号]';
             const wpsId = wpsIdMatch ? wpsIdMatch[1] : '[未找到WPS ID]';
 
             // 生成标准回复
-            const standardReply = `您好，辛苦久等啦，客服为您查询到订单号：${orderNo}，会员充值到账的手机号为：${phoneNo}，到账WPS ID为：${wpsId}，辛苦您可以登陆到账的WPS账号来查询会员有效期哦~`;
-
+			if(transferInIdVlaue !== ""){
+				//const standardReply = `亲亲 转出ID&转入ID【从ID${wpsId}转移到${transferInIdVlaue}】 （受理后一般5个工作日内审核处理，如因异常未转移成功客服会给您留言；订单权益转移只能转移1次，且转移后无法撤销转移；若原订单含有三方联合会员，联合会员是不支持转移的哦；若是个人账号转企业账号，个人云空间权益不支持使用的~）辛苦您确认一下哈 确认后客服这边帮您操作哦`
+				const standardReply = `您好，辛苦久等啦，客服为您查询到订单号：${orderNo}，会员充值到账的手机号为：${phoneNo}，到账WPS ID为：${wpsId}，辛苦您可以登陆到账的WPS账号来查询会员有效期哦~`
+			}else{
+				const standardReply = `您好，辛苦久等啦，客服为您查询到订单号：${orderNo}，会员充值到账的手机号为：${phoneNo}，到账WPS ID为：${wpsId}，辛苦您可以登陆到账的WPS账号来查询会员有效期哦~`;
+			}
             // 填入生成的内容
             document.getElementById('outputText').value = standardReply;
         }
@@ -352,4 +359,3 @@
     </script>
 </body>
 </html>
-
