@@ -197,7 +197,6 @@
         function processText() {
             const inputText = document.getElementById('inputText').value.trim();
 			const transferInIdVlaue = transferInId.value
-			const standardReply = `您好，辛苦久等啦，客服为您查询到订单号：${transferInIdVlaue}，会员充值到账的手机号为：${phoneNo}，到账WPS ID为：${wpsId}，辛苦您可以登陆到账的WPS账号来查询会员有效期哦~`
             if (!inputText) {
                 showToast('请输入订单信息', 'red');
                 return;
@@ -359,3 +358,4 @@
     </script>
 </body>
 </html>
+
